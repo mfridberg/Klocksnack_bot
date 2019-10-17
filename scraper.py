@@ -11,12 +11,14 @@ from loginInfo import get_email, get_password, get_receiver_email
 port = 465  # For SSL
 
 context = ssl.create_default_context()
-email = get_email()
-password = get_password()
-receiver_email = get_receiver_email()
+
+#Thinking what is best for performance. Using this or call functions every run
+# email = get_email()
+# password = get_password()
+# receiver_email = get_receiver_email()
 
 #Who does not love global variables?
-watches_searching_for = ["yema", "halios", "aquaracer", "c60"]
+watches_searching_for = ["yema", "halios", "aquaracer", "c60", "seiko"]
 previously_found_watches = []
 
 class link_data:
@@ -88,8 +90,8 @@ def send_mail():
     if a_tags_message != "":
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Watch found"
-        msg['From'] = email
-        msg['To'] = receiver_email
+        msg['From'] = get_email()
+        msg['To'] = get_receiver_email()
 
         # Create the body of the message (a plain-text and an HTML version).
         text = ""
@@ -125,10 +127,10 @@ def send_mail():
         msg.attach(part2)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-            server.login(email, password)
+            server.login(get_email(), get_password())
 
             #SEND EMAIL         
-            server.sendmail(email, receiver_email, msg.as_string())
+            server.sendmail(get_email(), get_receiver_email(), msg.as_string())
             print("Email sent")
 
     #SET THE SENT WATCHES TO TRUE
