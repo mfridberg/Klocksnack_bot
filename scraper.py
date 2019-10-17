@@ -1,11 +1,11 @@
-import requests
-import schedule
 import time
 import datetime
+import requests
+import schedule
 import smtplib, ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from loginInfo import get_email, get_password, get_receiver_email
 
 port = 465  # For SSL
@@ -15,16 +15,18 @@ email = get_email()
 password = get_password()
 receiver_email = get_receiver_email()
 
+#Who does not love global variables?
+watches_searching_for = ["yema", "halios", "aquaracer", "c60"]
 previously_found_watches = []
 
 class link_data:
-    def __init__(self, title, link, exists):
+    def __init__(self, title, link, is_sent):
         self.title = title
         self.link = link
-        self.exists = exists
+        self.is_sent = is_sent
 
 #Scrape klocksnack to find result we are searching for
-def init_scrape(lf):
+def init_scrape():
     url = "https://klocksnack.se/forums/handla-säljes-bytes.11/" 
     response = requests.get(url)
 
@@ -64,9 +66,12 @@ def init_scrape(lf):
 
     result = []
     #CHECK IF THE STRING WE ARE LOOKING FOR IS IN THE TITLE
+    #We are writing C code in python. 
+
     for t in link_data_arr:
-        if lf in t.title:
-            result.append(t)
+        for lf in watches_searching_for:
+            if lf in t.title.lower():
+                result.append(t)
 
     #RETURN RESULT
     return result
@@ -76,7 +81,7 @@ def send_mail():
     a_tags_message = ""
 
     for i in range(len(previously_found_watches)):
-        if previously_found_watches[i].exists is False:
+        if previously_found_watches[i].is_sent is False:
             a_tags_message += "<br><a href=" + '"' + str(previously_found_watches[i].link) + '">' + str(previously_found_watches[i].title) + "</a><br>" 
 
     #Generate message
@@ -107,7 +112,7 @@ def send_mail():
                 <p>Tjenixen!<br>
                     <br>
                     Klockan du letat efter finns nu till försäljning!<br>
-                    """+ a_tags_message + """
+                    """ + a_tags_message + """
                 </p>
             </body>
         </html>
@@ -128,28 +133,28 @@ def send_mail():
 
     #SET THE SENT WATCHES TO TRUE
     for i in range(len(previously_found_watches)):
-        previously_found_watches[i].exists = True
+        previously_found_watches[i].is_sent = True
 
     return
 
 
-def main_program(user_input):
+def main_program():
     
-    scrape_result = init_scrape(user_input)
+    scrape_result = init_scrape()
 
     for pfw in previously_found_watches:
         for sr in scrape_result:
             if sr.title == pfw.title:
-                sr.exists = True
+                sr.is_sent = True
 
     for i in range(len(scrape_result)):
-            if scrape_result[i].exists is False:
+            if scrape_result[i].is_sent is False:
                 previously_found_watches.append(scrape_result[i])
                 
 
     if previously_found_watches:
         for i in range(len(previously_found_watches)):
-            print(str(previously_found_watches[i].title) + " : " + str(previously_found_watches[i].exists))
+            print(str(previously_found_watches[i].title) + " : " + str(previously_found_watches[i].is_sent))
 
     print("Latest search was made: " + str(datetime.datetime.now()) + "\n")
 
@@ -163,15 +168,12 @@ def main_program(user_input):
   
 
 if __name__ == "__main__":
-    lf = input("Type name of watch you are looking for!: ")
+    #lf = input("Type name of watch you are looking for!: ")
 
-    main_program(lf)
-
-    def job():
-        main_program(lf)
+    main_program()
 
     #Schedule won't let me pass any data to function...
-    schedule.every(10).minutes.do(job)
+    schedule.every(10).minutes.do(main_program)
 
     while True:
         schedule.run_pending()
