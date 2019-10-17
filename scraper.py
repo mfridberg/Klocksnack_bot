@@ -6,14 +6,14 @@ import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
-from loginInfo import get_email, get_password
+from loginInfo import get_email, get_password, get_receiver_email
 
 port = 465  # For SSL
 
 context = ssl.create_default_context()
 email = get_email()
 password = get_password()
-receiver_email = "mats.fridberg@gmail.com"
+receiver_email = get_receiver_email()
 
 previously_found_watches = []
 
@@ -154,16 +154,15 @@ def main_program(user_input):
     print("Latest search was made: " + str(datetime.datetime.now()) + "\n")
 
     if previously_found_watches:
-        #Here we want to generate email if new result is found
         send_mail()
         print("Return to main for now, waiting \n")
     else:
         print("Nothing was found, returning to main, waiting! \n")
 
     return
+  
 
-def main():
-
+if __name__ == "__main__":
     lf = input("Type name of watch you are looking for!: ")
 
     main_program(lf)
@@ -171,16 +170,14 @@ def main():
     def job():
         main_program(lf)
 
+    #Schedule won't let me pass any data to function...
     schedule.every(10).minutes.do(job)
 
     while True:
         schedule.run_pending()
         time.sleep(1)   
 
-    exit(0)
-
-if __name__ == "__main__":
-    main()
+    exit(0)    
 
 
 
