@@ -18,7 +18,7 @@ context = ssl.create_default_context()
 # receiver_email = get_receiver_email()
 
 #Who does not love global variables?
-watches_searching_for = ["yema", "halios", "aquaracer", "c60", "seiko"]
+watches_searching_for = ["yema", "halios", "aquaracer", "c60", "damaskus"]
 previously_found_watches = []
 
 class link_data:
@@ -38,27 +38,27 @@ def init_scrape():
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    soup = soup.find('ol', {"class": "discussionListItems"})
+    ol_tags = soup.find('ol', {"class": "discussionListItems"})
 
     #SORT OUT 'a' TAGS WITHIN THE 'li' tag
     titles = []
     links = []
-    for li in soup.findAll('li'):
-        for a in li.findAll('a',{"class": "PreviewTooltip"},  href=True):
+    for li_tags in ol_tags.findAll('li'):
+        for a in li_tags.findAll('a',{"class": "PreviewTooltip"},  href=True):
             links.append(a['href'])
             titles.append(a)
 
 
-    #PUT TITLES IN AN ARRAY
     only_text = []
+    only_links = []
+
+    #PUT TITLES IN AN ARRAY
     for c in titles:
         only_text.append(c.text)
 
     #PUT CORRESPONDING LINKS IN AN ARRAY
-    only_links = []
     for l in links:
         only_links.append(l)
- 
     
     #CREATE AN ARRAY OF OUR title/link OBJECT
     link_data_arr = []
@@ -126,12 +126,21 @@ def send_mail():
         msg.attach(part1)
         msg.attach(part2)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-            server.login(get_email(), get_password())
 
-            #SEND EMAIL         
-            server.sendmail(get_email(), get_receiver_email(), msg.as_string())
-            print("Email sent")
+        try:
+            
+            with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
+                server.login(get_email(), get_password())
+
+                #SEND EMAIL         
+                server.sendmail(get_email(), get_receiver_email(), msg.as_string())
+
+                print("Email sent")
+        except smtplib.SMTPResponseException as e:
+            error_code = e.smtp_code
+            error_message = e.smtp_error
+            print("Error code: " + str(error_code))
+            print("Error message: " + str(error_message))
 
     #SET THE SENT WATCHES TO TRUE
     for i in range(len(previously_found_watches)):
