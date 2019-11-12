@@ -12,13 +12,8 @@ port = 465  # For SSL
 
 context = ssl.create_default_context()
 
-#Thinking what is best for performance. Using this or call functions every run
-# email = get_email()
-# password = get_password()
-# receiver_email = get_receiver_email()
-
 #Who does not love global variables?
-watches_searching_for = ["yema", "halios", "aquaracer", "c60", "damaskus"]
+watches_searching_for = ["yema", "halios", "aquaracer", "c60", "damasko", "c65", "unimatic", "nodus"]
 previously_found_watches = []
 
 class link_data:
@@ -165,7 +160,7 @@ def main_program():
 
     if previously_found_watches:
         for i in range(len(previously_found_watches)):
-            print(str(previously_found_watches[i].title) + " : " + str(previously_found_watches[i].is_sent))
+            print(str(previously_found_watches[i].title) + " -> Already sent: " + str(previously_found_watches[i].is_sent))
 
     print("Latest search was made: " + str(datetime.datetime.now()) + "\n")
 
